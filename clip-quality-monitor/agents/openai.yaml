@@ -1,0 +1,4 @@
+interface:
+  display_name: "短视频文案诊断"
+  short_description: "根据逐字稿评估开头吸引力、内容推进和互动诱因，引用原话并给出修改建议"
+  default_prompt: "使用 $clip-quality-monitor 评价这份短视频逐字稿并给出修改建议。"

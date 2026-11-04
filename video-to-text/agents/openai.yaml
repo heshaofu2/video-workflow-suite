@@ -1,0 +1,4 @@
+interface:
+  display_name: "视频转写"
+  short_description: "将视频或音频转成带时间戳的文字稿与字幕，支持长录音分段转写和说话人区分"
+  default_prompt: "使用 $video-to-text 将这段视频转为带时间戳的文字稿。"

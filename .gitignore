@@ -1,0 +1,11 @@
+.DS_Store
+.archive/
+.agents/
+node_modules/
+dist/
+__pycache__/
+*.py[cod]
+video-shared/local.json
+video-shared/.venv/
+.pytest_cache/
+*.log

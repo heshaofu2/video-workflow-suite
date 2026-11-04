@@ -1,0 +1,4 @@
+interface:
+  display_name: "字幕分段"
+  short_description: "将已有字幕按语义重分为短句，结合完整文字与词级时间生成新的短句字幕文件"
+  default_prompt: "使用 $subtitle-resegment 将这份字幕按语义重分成便于阅读的短句。"

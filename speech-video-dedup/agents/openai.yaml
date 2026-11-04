@@ -1,0 +1,4 @@
+interface:
+  display_name: "口播视频去重剪辑"
+  short_description: "结合口播、课件画面和操作过程去重，预览接法后保留原片导出完整视频"
+  default_prompt: "使用 $speech-video-dedup 检查这段视频里的重复讲述，兼顾声音和画面衔接，保留原视频并按我的要求输出候选、预览或完整剪辑版。"

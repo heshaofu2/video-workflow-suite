@@ -1,0 +1,4 @@
+interface:
+  display_name: "观点提炼"
+  short_description: "从转写稿和长文本提炼话题、观点、原话金句与行动项，保留可追溯的来源定位"
+  default_prompt: "使用 $insight-extractor 整理这份文字稿中的话题、观点和金句。"

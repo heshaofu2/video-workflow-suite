@@ -1,0 +1,7 @@
+{
+  "transcription": {
+    "engine": "mlx_whisper",
+    "python": "/path/to/existing-or-project-environment/bin/python",
+    "model_path": "/path/to/cached-mlx-whisper-large-v3-turbo-snapshot"
+  }
+}

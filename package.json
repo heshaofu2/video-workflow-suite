@@ -1,0 +1,39 @@
+{
+  "name": "video-workflow-suite",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heshaofu2/video-workflow-suite.git"
+  },
+  "homepage": "https://github.com/heshaofu2/video-workflow-suite#readme",
+  "bugs": { "url": "https://github.com/heshaofu2/video-workflow-suite/issues" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "description": "Project-local video CLI and agent skills for transcription, clipping, speech cleanup and subtitles",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "bin": { "video-workflow": "bin/video-workflow.mjs" },
+  "files": [
+    "bin/*.mjs",
+    "video-cli",
+    "*/SKILL.md",
+    "*/agents/*.yaml",
+    "*/references/*.md",
+    "video-shared/scripts/**/*.py",
+    "video-shared/scripts/**/*.sh",
+    "video-shared/requirements-mlx.txt",
+    "video-shared/local.example.json"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.mjs && python3 -m unittest discover -s video-shared/tests",
+    "pack:check": "node scripts/check-package.mjs",
+    "smoke:package": "node scripts/smoke-package.mjs",
+    "pack:local": "mkdir -p dist && npm pack --pack-destination dist"
+  },
+  "videoWorkflow": {
+    "skills": [
+      "video-workflow", "video-shared", "video-to-text", "insight-extractor",
+      "video-clipper", "speech-video-dedup", "subtitle-resegment", "clip-quality-monitor"
+    ]
+  }
+}

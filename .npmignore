@@ -1,0 +1,13 @@
+.git/
+.archive/
+.DS_Store
+**/__pycache__/
+**/*.pyc
+**/.venv/
+video-shared/local.json
+video-shared/tests/
+/tests/
+/scripts/
+/dist/
+/node_modules/
+*.log

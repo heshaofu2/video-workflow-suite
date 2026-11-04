@@ -1,0 +1,4 @@
+interface:
+  display_name: "长视频切片"
+  short_description: "按话题、说话人或已确认时间范围，从长视频中选段并批量粗剪成独立短片"
+  default_prompt: "使用 $video-clipper 从这个长视频中选择适合独立呈现的片段并粗剪。"
