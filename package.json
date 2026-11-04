@@ -1,6 +1,7 @@
 {
   "name": "video-workflow-suite",
   "version": "0.1.0",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/heshaofu2/video-workflow-suite.git"
