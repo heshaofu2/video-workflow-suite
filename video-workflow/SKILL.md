@@ -21,7 +21,7 @@ metadata:
 | 视频或音频转文字、补说话人标签 | [video-to-text](../video-to-text/SKILL.md) | 带时间戳的文字稿、JSON 和字幕 |
 | 从已有文本梳理话题、观点、金句、争议和行动项 | [insight-extractor](../insight-extractor/SKILL.md) | 观点摘要与来源定位 |
 | 从长视频按话题、说话人或时间范围切出短片 | [video-clipper](../video-clipper/SKILL.md) | 选段清单与粗剪片段 |
-| 删除重录、重复讲述和未完成起句，保留完整表达 | [speech-video-dedup](../speech-video-dedup/SKILL.md) | 去重候选、核对预览或清理后的完整视频 |
+| 删除重录、重复讲述和未完成起句，保留完整表达 | [speech-video-dedup](../speech-video-dedup/SKILL.md) | 去重候选、核对预览、剪辑报告或清理后的完整视频 |
 | 将已有字幕按语义重分为短句 | [subtitle-resegment](../subtitle-resegment/SKILL.md) | 新的短句 SRT |
 | 评估开头吸引力、内容推进和互动诱因 | [clip-quality-monitor](../clip-quality-monitor/SKILL.md) | 有原文依据的文案诊断 |
 | 明确使用 ChatCut 或继续其工程 | ChatCut 官方 `talking-head-guide` 及相应配套 Skill | 工程内剪辑、字幕或用户要求的包装 |

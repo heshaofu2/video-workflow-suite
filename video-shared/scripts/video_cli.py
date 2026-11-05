@@ -27,6 +27,7 @@ COMMANDS = {
     ('dedup', 'check'): ('dedup/cut_video.py', ('check',), '校验去重方案和保护区间'),
     ('dedup', 'render'): ('dedup/cut_video.py', ('render',), '按已核对的方案渲染删段视频'),
     ('dedup', 'review'): ('dedup/build_review.py', (), '生成引用真实预览的本地核对页'),
+    ('dedup', 'report'): ('dedup/build_report.py', (), '从方案与成片生成剪辑报告 HTML'),
     ('subtitle', 'resegment'): ('subtitle/resegment_subtitles.py', (), '把现有字幕重分为短句'),
 }
 
@@ -274,7 +275,7 @@ def preflight(key, args):
         outputs = [target, new_output(str(target).rsplit('.json', 1)[0] + '.raw.json')]
         copies.append((source, target))
         args = [str(target)] + (['--factor', str(opts.factor)] if opts.factor is not None else ['--anchor', opts.anchor])
-    elif key in (('subtitle', 'resegment'), ('dedup', 'review'), ('dedup', 'render'), ('clip', 'join')):
+    elif key in (('subtitle', 'resegment'), ('dedup', 'review'), ('dedup', 'report'), ('dedup', 'render'), ('clip', 'join')):
         value = option(args, '--output')
         if not value:
             raise CLIError('invalid_arguments', '需要 --output')
