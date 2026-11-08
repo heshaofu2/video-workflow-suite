@@ -76,8 +76,37 @@ test('update preserves private config byte for byte', (t) => {
   fs.writeFileSync(installed.config, config);
   const result = run('update', '--local', '--project', root);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.equal(result.json.data.runtime.status, 'preserved');
+  assert.equal(result.json.data.runtime.transcription.status, 'not_checked');
   assert.equal(fs.readFileSync(installed.config, 'utf8'), config);
+});
+
+test('default install and doctor do not discover or require a transcription environment', (t) => {
+  const root = project(t);
+  const installed = run('install', '--local', '--project', root);
+  assert.equal(installed.status, 0, installed.stdout + installed.stderr);
+  assert.equal(installed.json.data.runtime.transcription.status, 'not_checked');
+  assert.ok(!installed.json.data.runtime.missing.some((item) => /MLX|Apple|模型/.test(item)));
+  assert.ok(!fs.existsSync(path.join(root, '.agents/skills/video-shared/local.json')));
+  assert.ok(!fs.existsSync(path.join(root, '.agents/video-runtime')));
+  const checked = run('doctor', '--local', '--project', root);
+  assert.equal(checked.status, 0, checked.stdout + checked.stderr);
+  assert.deepEqual(checked.json.data.runtime, installed.json.data.runtime);
+});
+
+test('editing launcher and doctor ignore a broken optional transcription config', (t) => {
+  const root = project(t);
+  const installed = installFiles(root);
+  fs.writeFileSync(installed.config, 'broken optional config');
+  const result = run('--project', root, 'capabilities');
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  const checked = run('doctor', '--project', root);
+  assert.equal(checked.status, 0, checked.stdout + checked.stderr);
+  assert.equal(checked.json.data.runtime.transcription.status, 'not_checked');
+  const optional = run('doctor', '--project', root, '--transcription');
+  assert.equal(optional.status, 0, optional.stdout + optional.stderr);
+  assert.equal(optional.json.data.runtime.transcription.status, 'setup_required');
+  assert.equal(optional.json.data.runtime.status, checked.json.data.runtime.status);
+  assert.equal(fs.readFileSync(installed.config, 'utf8'), 'broken optional config');
 });
 
 test('only unchanged files owned by an older manifest can be removed on update', (t) => {

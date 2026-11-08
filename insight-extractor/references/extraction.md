@@ -101,5 +101,5 @@
 
 ## 与其他 Skill 的衔接
 
-- 上游：`video-to-text`（提供转写稿 transcript.txt / transcript.json，含说话人标签）
+- 上游：用户已有文字、独立转写工具或可选的 `video-to-text`；按任务需要提供文字稿、时间戳和说话人标签。
 - 下游：`video-clipper`（用观点摘要中的金句/争议点定位切片选段）

@@ -39,13 +39,13 @@ ChatCut 本机 Desktop 配套入口通常为 `~/.agents/skills/chatcut-talking-h
 
 ### 长视频切短片
 
-按需要执行 `video-to-text` → `insight-extractor` → `video-clipper`。已有转写、摘要或明确时间范围时跳过已满足的环节。选段完整性检查与确认由 `video-clipper` 负责。
+先核对已有转写、摘要或明确时间范围，已有材料足够时直接进入 `insight-extractor` 或 `video-clipper`。语义选段缺少带时间文字稿时，按 [转写材料契约](../video-shared/references/transcript-contract.md) 引导用户取得材料，沿用用户选择的工具；不把调用 `video-to-text` 或初始化 MLX 作为必经步骤。选段完整性检查与确认由 `video-clipper` 负责。
 
 粗剪与去静音不能代表语义去重已经完成。用户要求“每条也剪干净”时再接续 `speech-video-dedup`；未要求时不追加精剪。
 
 ### 完整口播或课程去重
 
-使用 `speech-video-dedup` 检查全片及剪口。需要转写时统一调用 `video-to-text`；复用和后端选择以共享转写契约为准，去重不再维护第二套识别流程。用户未要求时不把完整课程压缩成短视频。
+使用 `speech-video-dedup` 检查全片及剪口。缺少定位材料时先说明所需的文字稿与时间戳，按共享契约引导用户完成转写；去重只消费产物，不强制识别引擎。用户未要求时不把完整课程压缩成短视频。
 
 ### 字幕与质量诊断
 

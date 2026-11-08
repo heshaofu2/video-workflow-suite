@@ -14,7 +14,7 @@ metadata:
 
 ## 原片与工具
 
-先读取 [video-shared](../video-shared/SKILL.md)，目录、文件保护、命令发现和输出判断遵循共享规则。转写只调用 [video-to-text](../video-to-text/SKILL.md)，复用和局部补充按 [转写契约](../video-shared/references/transcript-contract.md) 执行，不在本 Skill 另选引擎或另写识别脚本。
+先读取 [video-shared](../video-shared/SKILL.md)，目录、文件保护、命令发现和输出判断遵循共享规则。已有同源带时间文字稿可直接复用；缺少全片定位或局部复核材料时，按 [转写契约](../video-shared/references/transcript-contract.md) 说明范围和精度要求，引导用户用其选择的工具取得材料。去重不依赖转写 Skill、引擎或本机模型。
 
 - 用 `dedup inspect` 记录原片规格、大小、修改时间和 SHA-256；删段方案必须对应本次核对的原片。
 - 本地删段通过统一 CLI 的 `dedup check / render` 执行。用户明确指定剪辑软件时沿用其选择；不为删段搭建新的动画或网页渲染工程。

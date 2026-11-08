@@ -34,7 +34,9 @@ try {
   if (before && !fs.readFileSync(configFile).equals(before)) throw new Error('update 改写了配置');
   let words = null;
   if (values.audio) {
-    if (install.data.runtime.status !== 'ready') throw new Error('真实识别测试需要已经准备好的本地 MLX 环境');
+    if (run('doctor', '--project', project, '--transcription').data.runtime.transcription.status !== 'ready') {
+      throw new Error('真实识别测试需要已经准备好的本地 MLX 环境；请显式使用 --prepare');
+    }
     run('--project', project, 'transcript', 'run', path.resolve(values.audio), '--output-dir', path.join(project, 'output'), '--output-name', 'transcript');
     const transcript = JSON.parse(fs.readFileSync(path.join(project, 'output', 'transcript.json'), 'utf8'));
     words = transcript.word_segments.length;

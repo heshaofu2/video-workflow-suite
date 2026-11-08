@@ -4,34 +4,39 @@
 
 采用 [MIT 许可](LICENSE)。
 
-运行依赖为 Node.js 20+、Python 3.10+、FFmpeg/FFprobe。首版语音识别支持 Apple Silicon Mac，统一使用 MLX Whisper large-v3-turbo。其他平台可安装说明与部分本地处理功能，但不提供 MLX 识别环境自动准备。
+安装器需要 Node.js 20+ 与 Git；本地剪辑需要 Python 3.10+、FFmpeg/FFprobe，部分命令需要 Bash，不依赖 Apple 芯片或语音识别环境。其他操作系统需自行满足这些依赖，Windows 可使用 WSL；尚未逐个平台实测。
+
+剪辑按文字稿、字幕和时间戳衔接，支持用户选用的转写工具所生成的合规产物。缺少材料时，Skill 会说明所需格式、覆盖范围和时间精度，引导用户完成转写；已有明确剪辑范围或只做文字分析时，不强制转写。套件自带的 MLX Whisper large-v3-turbo 只是可选转写实现，仅支持 Apple Silicon Mac。
 
 ## 给其他人安装
 
 在希望使用这些 Skill 的项目目录中运行：
 
 ```bash
-npx github:heshaofu2/video-workflow-suite install --local --prepare
+npx --yes github:heshaofu2/video-workflow-suite install --local
+npx --yes github:heshaofu2/video-workflow-suite doctor --local
 ```
 
 需要固定首版时可用：
 
 ```bash
-npx github:heshaofu2/video-workflow-suite#v0.1.0 install --local --prepare
+npx --yes github:heshaofu2/video-workflow-suite#v0.1.0 install --local
 ```
 
 安装默认只作用于当前项目，也可加 `--project /path/to/project`。程序复制全部八个 Skill 与 CLI 到项目的 `.agents/skills/`，并在 `.agents/video-workflow-install.json` 登记版本和文件校验值。不会向全局 Skill 目录安装。
 
-`--prepare` 显式允许准备本项目所需的 MLX Python 环境和约 1.6GB 权重。已有可用环境及 Hugging Face 权重会被复用，不重新复制模型。缺环境时优先用现有 uv 创建 Python 3.12 环境；没有 uv 时可用现有 Python 创建隔离环境。不会给系统 Python 安装包，也不会自动安装 Homebrew 或改动系统 FFmpeg。
+默认安装和更新不探测、不准备转写环境，不创建 `local.json`，保留已有配置。安装检查与 `doctor` 的 `runtime.status` 只反映剪辑依赖；转写默认标记为 `not_checked`。即使 MLX 未安装或旧的转写配置失效，剪辑、读取已有转写和字幕处理仍可独立使用。
 
-若只希望先安装程序和说明，不准备依赖，省略 `--prepare`。缺环境时会返回 `setup_required`，之后可执行：
+只有用户选择内置 MLX 转写时，才执行以下可选步骤：
 
 ```bash
-npx github:heshaofu2/video-workflow-suite init --local --prepare
-npx github:heshaofu2/video-workflow-suite doctor --local
+npx --yes github:heshaofu2/video-workflow-suite init --local --prepare
+npx --yes github:heshaofu2/video-workflow-suite doctor --local --transcription
 ```
 
-如自动发现未覆盖你的已有环境，可用 `init --python /path/to/python --model-path /path/to/snapshot` 指定。说话人分离是可选能力：自动发现现有环境，不额外下载这套可选依赖或模型。
+`--prepare` 显式允许准备 MLX Python 环境和约 1.6GB 权重。优先复用已有环境及 Hugging Face 权重；缺环境时优先用 uv 创建 Python 3.12 环境，没有 uv 时用现有 Python 创建隔离环境。不向系统 Python 安装包，不自动安装 Homebrew 或 FFmpeg。也可在首次 `install --local` 时显式加 `--prepare`，转写状态单独返回于 `runtime.transcription`。
+
+如自动发现未覆盖你的已有环境，可用 `init --python /path/to/python --model-path /path/to/snapshot` 指定。说话人分离也是可选能力，不额外下载这套可选依赖或模型。`doctor --transcription` 只检查配置、包与权重文件是否存在，不执行模型推理；转写的 `setup_required` 不影响剪辑状态。
 
 ## 使用与更新
 
@@ -71,7 +76,7 @@ npm run smoke:package
 开发者也可以把 `npm run pack:local` 生成的压缩包交给他人，在其项目目录内安装：
 
 ```bash
-npx --package=/path/to/video-workflow-suite-0.1.0.tgz video-workflow install --local --prepare
+npx --yes --package=/path/to/video-workflow-suite-0.1.0.tgz video-workflow install --local
 ```
 
 发布新版本前应更新版本号并完成测试，再创建相应 Git 标签。Git 提交、远端推送和发布按明确授权执行。当前 `private: true` 防止误发布 npm，后续需要发布时再明确启用。

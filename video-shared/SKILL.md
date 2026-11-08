@@ -10,12 +10,12 @@ metadata:
 
 本项目的确定性操作统一通过相邻的 [video-cli](../video-cli) 执行。以本 Skill 所在目录解析 `../video-cli` 的绝对路径；示例中的 `$VIDEO_CLI` 指这个路径，不假定它在 PATH，不安装全局命令。
 
-先用 `capabilities` 或对应领域的 `--help` 确认能力，再读取相关领域参考。参数不明确时调用完整命令的 `--help`，不猜 flag。`doctor` 检查 FFmpeg、FFprobe、项目已登记的 MLX 环境与本地权重，不安装或更新它们。识别和可选分人分别使用 `local.json` 中的现有解释器，其他命令使用当前 Python；不需要修改全局环境。
+先用 `capabilities` 或对应领域的 `--help` 确认能力，再读取相关领域参考。参数不明确时调用完整命令的 `--help`，不猜 flag。`doctor` 默认只检查 Python、FFmpeg、FFprobe、Bash 和执行脚本；`doctor --transcription` 才额外检查可选的本地 MLX 转写，状态独立报告，不安装或更新依赖。剪辑使用当前 Python，不读取转写配置。
 
 ```bash
 "$VIDEO_CLI" capabilities
-"$VIDEO_CLI" transcript --help
-"$VIDEO_CLI" transcript run --help
+"$VIDEO_CLI" doctor
+"$VIDEO_CLI" clip --help
 ```
 
 ## 共用规则
@@ -25,6 +25,7 @@ metadata:
 - `--dry-run` 放在领域名之前，检查并返回将执行的命令、输出和复制动作，不启动任务、不写文件。用户已经要求完整处理时，不增加重复确认；内容取舍或范围未确定时由所属领域 Skill 澄清。
 - 子 Skill 可以独立完成单项任务；缺少前置材料时可直接调用提供它的 Skill，不把单项任务交回 Workflow。只有组合目标需要 Workflow 编排。
 - 观点提炼、语义选段、重复判断、字幕意群和文案评价由助手按 Skill 规则完成；CLI 读取素材、检查方案并执行。ChatCut 仍通过官方 Skill 和 MCP 使用。
+- 剪辑不绑定转写工具或硬件。已有材料优先复用；确实缺少文字稿、字幕或时间戳时，按转写契约说明所需产物并引导用户完成转写，再继续依赖它的步骤。
 
 ## 按需读取
 
@@ -37,9 +38,9 @@ metadata:
 
 ## 后续维护
 
-识别环境或缓存位置移动时，只更新 `local.json` 中的路径；保留虚拟环境的 Python 路径，不解析成其底层系统 Python。模型固定为 MLX Turbo，不能因为路径失效就下载第二套模型。
+只有选择内置 MLX 转写时才需要 `local.json`；环境或缓存位置移动时更新其中的路径，保留虚拟环境的 Python 路径，不解析成其底层系统 Python。其他转写工具的配置由各自工具管理。
 
-新电脑通过本项目安装包的 `install --local` 安装 CLI 与全部领域 Skill。安装器先复用已有环境与模型缓存；首次准备环境和权重时显式使用 `--prepare`。未初始化时通过同一安装包运行 `init --local`，不直接复制其他机器的 `local.json`。仓库维护与具体安装命令见 [项目说明](../README.md)。
+新电脑通过本项目安装包的 `install --local` 安装 CLI 与全部领域 Skill，不探测或准备转写模型。仅在用户选择内置 MLX 转写时，才通过同一安装包运行 `init --local --prepare`，复用已有环境与模型缓存；不复制其他机器的 `local.json`。仓库维护与具体安装命令见 [项目说明](../README.md)。
 
 - 新增确定性能力：在 `scripts/commands/` 中维护唯一执行实现，并更新 `scripts/video_cli.py` 的命令注册与对应行为测试；不要在领域 Skill 中复制脚本。
 - 修改业务判断：只改所属领域的 Skill 或参考，例如去重取舍归去重，选段完整性归切片，阅读断句归字幕。

@@ -8,7 +8,7 @@ metadata:
 
 ## 共享前置
 
-读取 [video-shared](../video-shared/SKILL.md)。视频转写 JSON 或带时间筛选的素材统一通过 `transcript read` 获取，纯文字可直接读取；缺转写时调用 `video-to-text`。
+读取 [video-shared](../video-shared/SKILL.md)。视频转写 JSON 或带时间筛选的素材统一通过 `transcript read` 获取，纯文字可直接读取。只有媒体而没有正文时，按 [转写材料契约](../video-shared/references/transcript-contract.md) 引导用户取得文字稿；仅做文字分析不强制时间戳或特定转写工具。
 
 ## 职责
 

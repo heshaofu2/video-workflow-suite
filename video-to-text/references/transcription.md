@@ -1,8 +1,8 @@
-## 统一模型与运行环境
+## 可选 MLX 实现的运行环境
 
-`transcript run` 与长视频分段识别统一使用 MLX Whisper large-v3-turbo，默认语言为中文，并保留词级时间。现有解释器、模型快照和可选分人环境由 `video-shared/local.json` 登记。
+仅在用户选择内置本地识别时使用本说明；外部转写产物按 [共享契约](../../video-shared/references/transcript-contract.md) 接入，无需准备 MLX。`transcript run` 与长视频分段识别使用 MLX Whisper large-v3-turbo，默认语言为中文，并保留词级时间。现有解释器、模型快照和可选分人环境由 `video-shared/local.json` 登记。
 
-CLI 从已存在的本地快照加载，识别子进程设置离线模式。缓存失效或环境移动时停止并修正路径，不自动下载，不切换到 faster-whisper large-v3。`doctor` 查看当前实际选择。
+CLI 从已存在的本地快照加载，识别子进程设置离线模式。缓存失效或环境移动时停止并修正路径，不自动下载。`doctor --transcription` 检查内置转写配置；用户也可选择其他转写工具，其余剪辑步骤不受影响。
 
 ## 单文件识别
 

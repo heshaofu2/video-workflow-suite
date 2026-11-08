@@ -10,7 +10,9 @@ CLI 目前提供：
 - `subtitle resegment`
 - `doctor` 与 `capabilities`
 
-完整参数以具体命令的 `--help` 为准，不在多个 Skill 里重复维护参数清单。`transcript run` 和 `segments` 默认且仅使用 `--backend mlx`，模型为 `mlx-community/whisper-large-v3-turbo`，从项目 `local.json` 指定的现有环境与本地快照加载。旧的 `local/server/auto` 识别后端与 large-v3 选择会被明确拒绝。说话人分离可使用已有独立环境，但不会加载第二个识别模型。
+完整参数以具体命令的 `--help` 为准，不在多个 Skill 里重复维护参数清单。剪辑、读取已有转写和字幕处理不读取 `local.json`，也不加载识别模型。`doctor` 只检查剪辑环境；`doctor --transcription` 才额外报告可选 MLX 状态，顶层 `status` 仍表示剪辑环境，不能把转写未就绪误判为剪辑不可用。
+
+仅当选择内置识别时，`transcript run` 和 `segments` 使用 `--backend mlx` 与 `mlx-community/whisper-large-v3-turbo`，从 `local.json` 指定的现有环境与本地快照加载。它们不提供其他识别后端；选择外部转写工具时直接接入产物，不给这些命令猜测新的 backend。可选说话人分离复用已有独立环境。
 
 ## 输出契约
 

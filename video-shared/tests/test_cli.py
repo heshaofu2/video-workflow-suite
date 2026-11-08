@@ -51,6 +51,21 @@ class CLITests(unittest.TestCase):
         self.assertIn('insight-extractor', data['agent_skills'])
         self.assertTrue(all(x['mode'] == 'local' for x in data['commands']))
 
+    def test_doctor_without_transcription_config(self):
+        self.config.unlink()
+        data = self.run_cli('doctor')['data']
+        self.assertEqual(data['transcription']['status'], 'not_checked')
+        self.assertFalse(any('MLX' in item for item in data['missing']))
+        optional = self.run_cli('doctor', '--transcription')['data']
+        self.assertEqual(optional['transcription']['status'], 'setup_required')
+        self.assertEqual(optional['status'], data['status'])
+        self.assertFalse(self.config.exists())
+
+    def test_external_transcript_needs_no_recognition_config(self):
+        self.config.unlink()
+        data = self.run_cli('transcript', 'read', '--input', self.transcript())['data']
+        self.assertEqual(len(data['segments']), 3)
+
     def test_unknown_command_has_json_error(self):
         data = self.run_cli('clip', 'invented', ok=False)
         self.assertEqual(data['error']['code'], 'unknown_command')
@@ -167,6 +182,7 @@ class CLITests(unittest.TestCase):
         self.assertTrue((self.root / 'corrected.raw.json').is_file())
 
     def test_subtitle_roundtrip_and_overwrite_rejection(self):
+        self.config.unlink()
         srt = self.root / 'input.srt'
         srt.write_text('1\n00:00:00,000 --> 00:00:08,000\n今天学习人工智能\n')
         segmented = self.root / 'segmented.txt'
@@ -190,6 +206,7 @@ class CLITests(unittest.TestCase):
 
     @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), '需要本地 FFmpeg')
     def test_real_cut_and_dedup_through_unified_cli(self):
+        self.config.unlink()
         source = self.root / 'source video.mp4'
         subprocess.run(['ffmpeg', '-v', 'error', '-f', 'lavfi', '-i',
                         'testsrc2=size=160x90:rate=25:duration=2', '-f', 'lavfi', '-i',

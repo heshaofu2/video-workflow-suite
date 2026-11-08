@@ -115,8 +115,13 @@ export function installFiles(project, update = false) {
     marker: target.marker, version: metadata.version, skills: SKILLS, changed_files: changed };
 }
 
-function pythonProbe(python) {
-  const result = spawnSync(python, ['-c', 'import importlib.util,json,sys; print(json.dumps({"python":sys.executable,"version":list(sys.version_info[:2]),"mlx":importlib.util.find_spec("mlx_whisper") is not None,"whisperx":importlib.util.find_spec("whisperx") is not None}))'],
+function pythonProbe(python, transcription = false) {
+  const result = spawnSync(python, ['-c', `import importlib.util,json,sys
+info = {"python":sys.executable,"version":list(sys.version_info[:2])}
+if sys.argv[1] == 'transcription':
+    info.update(mlx=importlib.util.find_spec("mlx_whisper") is not None,
+                whisperx=importlib.util.find_spec("whisperx") is not None)
+print(json.dumps(info))`, transcription ? 'transcription' : 'editing'],
     { encoding: 'utf8', timeout: 5000 });
   if (result.status !== 0) return null;
   try {
@@ -189,12 +194,12 @@ export function initializeRuntime(project, options = {}) {
   let python = null;
   let diarization = null;
   for (const candidate of pythonCandidates(target, existing, options.python)) {
-    const probe = pythonProbe(candidate);
+    const probe = pythonProbe(candidate, true);
     if (!probe) continue;
     if (!python && probe.mlx) python = probe.python;
     if (!diarization && probe.whisperx) diarization = probe.python;
   }
-  if (options.python && !pythonProbe(options.python)?.mlx) {
+  if (options.python && !pythonProbe(options.python, true)?.mlx) {
     throw new InstallError('invalid_python', '指定解释器中没有可用的 mlx_whisper；本次未安装依赖');
   }
   let model = cachedModel(existing, options['model-path']);
@@ -248,12 +253,26 @@ export function initializeRuntime(project, options = {}) {
 
 function emit(data) { process.stdout.write(JSON.stringify({ ok: true, data }) + '\n'); }
 
+function editingPython() {
+  return ['python3', 'python'].find((candidate) => pythonProbe(candidate));
+}
+
+function checkEditingRuntime(project, transcription = false) {
+  const python = editingPython();
+  if (!python) return { status: 'setup_required', missing: ['Python 3.10+'],
+    transcription: { status: 'not_checked' } };
+  const result = spawnSync(python, [path.join(locations(project).skills, 'video-cli'), 'doctor',
+    ...(transcription ? ['--transcription'] : [])], { encoding: 'utf8' });
+  if (result.status !== 0) throw new InstallError('check_failed', result.stdout || result.stderr);
+  return JSON.parse(result.stdout).data;
+}
+
 function help() {
   process.stdout.write(`video-workflow ${metadata.version}\n\n` +
-    'install --local [--project 目录] [--prepare]   项目内安装；可显式准备环境和模型\n' +
+    'install --local [--project 目录] [--prepare]   项目内安装；--prepare 可选准备 MLX 转写\n' +
     'update  --local [--project 目录]              从当前包更新，拒绝覆盖本地修改\n' +
-    'init    --local [--project 目录] [--prepare]   复用已有环境，或准备项目环境和权重\n' +
-    'doctor  [--project 目录]                      检查项目安装与运行环境\n' +
+    'init    --local [--project 目录] [--prepare]   可选：复用或准备 MLX 转写环境和权重\n' +
+    'doctor  [--project 目录] [--transcription]    检查剪辑环境；可选检查 MLX 转写\n' +
     '--project 目录 transcript|clip|dedup|subtitle … 转发已安装的本地 CLI\n\n' +
     'init 也支持 --python 和 --model-path 显式指定现有环境。默认不安装全局 Skill。\n');
 }
@@ -268,29 +287,31 @@ export function main(argv = process.argv.slice(2)) {
     if (['install', 'update', 'init', 'doctor'].includes(command)) {
       const { values } = parseArgs({ args: argv.slice(1), options: {
         local: { type: 'boolean' }, project: { type: 'string' }, prepare: { type: 'boolean' },
-        python: { type: 'string' }, 'model-path': { type: 'string' }, help: { type: 'boolean', short: 'h' },
+        python: { type: 'string' }, 'model-path': { type: 'string' }, transcription: { type: 'boolean' },
+        help: { type: 'boolean', short: 'h' },
       } });
       if (values.help) { help(); return 0; }
       project = values.project ?? project;
       if (command === 'install' || command === 'update') {
         const installed = installFiles(project, command === 'update');
-        const keepConfig = fs.existsSync(installed.config) && !values.prepare && !values.python && !values['model-path'];
-        const runtime = keepConfig ? { status: 'preserved', config: installed.config } : initializeRuntime(project, values);
+        const runtime = checkEditingRuntime(project);
+        if (values.prepare || values.python || values['model-path']) {
+          runtime.transcription = initializeRuntime(project, values);
+        }
         emit({ ...installed, runtime });
       } else if (command === 'init') emit(initializeRuntime(project, values));
       else {
         const target = locations(project);
         if (!fs.existsSync(path.join(target.skills, 'video-cli'))) throw new InstallError('not_installed', '项目尚未安装');
-        emit({ project: target.project, installed: fs.existsSync(target.marker), runtime: initializeRuntime(project, { write: false }) });
+        emit({ project: target.project, installed: fs.existsSync(target.marker), runtime: checkEditingRuntime(project, values.transcription) });
       }
       return 0;
     }
     const target = locations(project);
     const cli = path.join(target.skills, 'video-cli');
     if (!fs.existsSync(cli)) throw new InstallError('not_installed', '先在项目中执行 install --local');
-    const config = fs.existsSync(target.config) ? readJSON(target.config) : {};
-    const python = config.transcription?.python || ['python3', 'python'].find((candidate) => pythonProbe(candidate));
-    if (!python) throw new InstallError('python_missing', '先执行 init --local --prepare');
+    const python = editingPython();
+    if (!python) throw new InstallError('python_missing', '请先安装 Python 3.10+；剪辑不需要 MLX 转写环境');
     return spawnSync(python, [cli, ...argv], { stdio: 'inherit' }).status ?? 1;
   } catch (error) {
     process.stdout.write(JSON.stringify({ ok: false, error: {

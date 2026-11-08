@@ -325,13 +325,13 @@ def capabilities():
                          for key, value in COMMANDS.items()] + [
                              {'command': 'transcript read', 'description': '读取已有转写或按时间提取完整段落', 'mode': 'local'}],
             'agent_skills': ['insight-extractor', 'clip-quality-monitor', 'video-workflow'],
-            'transcription_engine': 'mlx_whisper', 'transcription_model': MODEL,
+            'transcription_engine': 'mlx_whisper', 'transcription_model': MODEL, 'transcription_optional': True,
             'chatcut': '通过官方 Skill 和 MCP 使用，不伪装成本 CLI 的本地功能'}
 
 
 def help_text(domain=None):
     print('video-cli [--dry-run] <领域> <命令> [参数]\n')
-    print('doctor：检查本地依赖；capabilities：列出实际能力；<领域> <命令> --help：查看真实用法。\n')
+    print('doctor：检查剪辑依赖；doctor --transcription：额外检查可选 MLX 转写；capabilities：列出能力；<领域> <命令> --help：查看用法。\n')
     for item in capabilities()['commands']:
         if domain is None or item['command'].startswith(domain + ' '):
             print(f"  {item['command']:<25} {item['description']}")
@@ -350,16 +350,30 @@ def main(argv=None):
         if args == ['capabilities']:
             emit(capabilities())
             return 0
-        if args == ['doctor']:
-            config = load_runtime()
-            check = subprocess.run([config['python'], '-c',
-                                    'import importlib.util; print(int(importlib.util.find_spec("mlx_whisper") is not None))'],
-                                   capture_output=True, text=True, check=True)
-            emit({'python': sys.executable, 'ffmpeg': shutil.which('ffmpeg'), 'ffprobe': shutil.which('ffprobe'),
-                  'transcription_python': config['python'], 'mlx_whisper': check.stdout.strip() == '1',
-                  'transcription_engine': 'mlx_whisper', 'transcription_model': MODEL,
-                  'model_path': config['model_path'],
-                  'scripts_present': all((ROOT / value[0]).is_file() for value in COMMANDS.values())})
+        if args in (['doctor'], ['doctor', '--transcription']):
+            tools = {name: shutil.which(name) for name in ('ffmpeg', 'ffprobe', 'bash')}
+            missing = [name for name, executable in tools.items() if not executable]
+            if sys.version_info < (3, 10):
+                missing.append('Python 3.10+')
+            scripts_present = all((ROOT / value[0]).is_file() for value in COMMANDS.values())
+            if not scripts_present:
+                missing.append('CLI scripts')
+            transcription = {'status': 'not_checked'}
+            if '--transcription' in args:
+                try:
+                    config = load_runtime()
+                    check = subprocess.run([config['python'], '-c',
+                                            'import importlib.util; print(int(importlib.util.find_spec("mlx_whisper") is not None))'],
+                                           capture_output=True, text=True, timeout=5)
+                    ready = check.returncode == 0 and check.stdout.strip() == '1'
+                    transcription = {'status': 'ready' if ready else 'setup_required',
+                                     'engine': 'mlx_whisper', 'model': MODEL,
+                                     'python': config['python'], 'model_path': config['model_path']}
+                except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired) as error:
+                    transcription = {'status': 'setup_required', 'reason': str(error)}
+            emit({'status': 'setup_required' if missing else 'ready', 'python': sys.executable,
+                  **tools, 'missing': missing, 'scripts_present': scripts_present,
+                  'transcription': transcription})
             return 0
         domains = {key[0] for key in COMMANDS}
         if args[0] in domains and (len(args) == 1 or args[1:] in (['--help'], ['-h'])):

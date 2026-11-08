@@ -12,7 +12,7 @@ metadata:
 
 ## 输入与交付
 
-输入视频，以及现有转写、观点摘要或用户已确定的范围；交付候选、确认后的 `clips.list` 和粗剪片段。已有范围足以执行时不强制跑摘要；缺转写可直接调用 [video-to-text](../video-to-text/SKILL.md)，需要梳理长内容时再调用 [insight-extractor](../insight-extractor/SKILL.md)。
+输入视频，以及现有转写、观点摘要或用户已确定的范围；交付候选、确认后的 `clips.list` 和粗剪片段。已有范围足以执行时不强制转写或摘要；语义选段缺材料时，按 [转写材料契约](../video-shared/references/transcript-contract.md) 说明需要同源带时间文字稿并引导用户取得，不限定工具或本地模型。需要梳理长内容时再调用 [insight-extractor](../insight-extractor/SKILL.md)。
 
 ## 命令与判断
 
